@@ -320,15 +320,43 @@ html, body {
 #go-btn:hover .go-rule { max-width: 100px; }
 #go-btn:active .go-label { transform: scale(0.96); color: var(--accent); }
 
-/* bottom stamp */
-.m-stamp {
+/* bottom footer bar */
+.m-footer {
   position: absolute;
-  bottom: calc(env(safe-area-inset-bottom,0px) + 22px);
-  right: 24px;
-  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
-  color: rgba(237,232,223,0.1);
+  bottom: calc(env(safe-area-inset-bottom,0px) + 18px);
+  left: 36px; right: 36px;
+  display: flex; align-items: center; justify-content: space-between;
   opacity: 0; animation: rise 0.7s 1.1s ease forwards;
+  pointer-events: all;
 }
+.m-built {
+  font-size: 10px; letter-spacing: 0.3px; font-weight: 300;
+  color: rgba(237,232,223,0.22);
+}
+.m-built a {
+  color: rgba(191,155,90,0.5);
+  text-decoration: none;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+.m-built a:hover { color: var(--accent); }
+.m-install-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(191,155,90,0.1);
+  border: 1px solid rgba(191,155,90,0.25);
+  color: rgba(191,155,90,0.7);
+  padding: 7px 12px; border-radius: 2px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 10px; letter-spacing: 2px; font-weight: 600;
+  text-transform: uppercase; cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.m-install-btn:hover {
+  background: rgba(191,155,90,0.18);
+  border-color: rgba(191,155,90,0.5);
+  color: var(--accent);
+}
+.m-install-btn svg { flex-shrink: 0; }
 
 /* ══════════════════════════════════
    IMAGE SCREEN
@@ -535,7 +563,15 @@ html, body {
       </button>
     </div>
   </div>
-  <div class="m-stamp">discipline · legacy · now</div>
+  <div class="m-footer">
+    <div class="m-built">built by <a href="https://github.com/whoaryu" target="_blank">@whoaryu</a></div>
+    <button class="m-install-btn" id="home-install-btn">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5.5 1v6M2.5 5l3 3 3-3M1 9.5h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Add to Home
+    </button>
+  </div>
 </div>
 
 <!-- IMAGE SCREEN — 5 slides, looping all 13 images -->
@@ -587,21 +623,18 @@ html, body {
   let barTimer = null;
   let imgOrder = [];
   let deferredPrompt = null;
+  let hasPromptedInstall = !!localStorage.getItem('pwa_hidden'); // only show once ever
 
   const isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone = !!window.navigator.standalone
                     || window.matchMedia('(display-mode: standalone)').matches;
 
   // ── PWA ──────────────────────────────────────────────
+  // Store the prompt — only trigger after user sees all 5 photos once
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    if (!localStorage.getItem('pwa_hidden')) setTimeout(showAndroidBanner, 2000);
   });
-
-  if (isIOS && !isStandalone && !localStorage.getItem('pwa_hidden')) {
-    setTimeout(() => document.getElementById('ios-sheet').classList.add('show'), 2000);
-  }
 
   function showAndroidBanner() {
     document.getElementById('install-banner').classList.add('visible');
@@ -732,13 +765,26 @@ html, body {
     clearInterval(timer);
     timer = setInterval(() => {
       const next = (current + 1) % SLIDE_COUNT;
-      // on full loop, reshuffle images
       if (next === 0) {
+        // Completed a full loop — show install prompt ONCE ever, before reshuffling
+        if (!hasPromptedInstall) {
+          hasPromptedInstall = true;
+          localStorage.setItem('pwa_hidden', '1');
+          setTimeout(triggerInstallPrompt, 400); // slight delay after last image
+        }
         imgOrder = pickImages();
         loadSlides(imgOrder);
       }
       goToSlide(next);
     }, AUTO_MS);
+  }
+
+  function triggerInstallPrompt() {
+    if (isIOS && !isStandalone) {
+      document.getElementById('ios-sheet').classList.add('show');
+    } else if (deferredPrompt) {
+      showAndroidBanner();
+    }
   }
 
   // ── EVENTS ───────────────────────────────────────────
@@ -756,6 +802,22 @@ html, body {
     if (e.target.closest('.x-btn')) return;
     goToSlide(current + 1);
     startTimer();
+  });
+
+  // Home screen install button
+  document.getElementById('home-install-btn').addEventListener('click', () => {
+    if (isIOS && !isStandalone) {
+      document.getElementById('ios-sheet').classList.add('show');
+    } else if (deferredPrompt) {
+      showAndroidBanner();
+    } else if (isStandalone) {
+      // already installed — show a subtle already-installed message
+      const btn = document.getElementById('home-install-btn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5l3 3 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Installed';
+      btn.style.color = 'rgba(191,155,90,0.9)';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2500);
+    }
   });
 
   // swipe
