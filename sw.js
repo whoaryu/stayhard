@@ -4,7 +4,7 @@ const CACHE = 'stayhard-v1';
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE).then((cache) => {
-      const assets = ['./goforit.html', './logo.jpg'];
+      const assets = ['./index.html', './logo.jpg'];
       // Cache all 13 motivation images
       for (let i = 1; i <= 13; i++) assets.push(`./${i}.jpg`);
       return cache.addAll(assets).catch(() => {
@@ -37,6 +37,6 @@ self.addEventListener('fetch', (e) => {
         }
         return response;
       });
-    }).catch(() => caches.match('./goforit.html'))
+    }).catch(() => caches.match('./index.html'))
   );
 });

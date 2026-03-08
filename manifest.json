@@ -1,7 +1,7 @@
 {
   "name": "Stay Hard",
   "short_name": "Stay Hard",
-  "start_url": "./goforit.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#080808",
   "theme_color": "#080808",
