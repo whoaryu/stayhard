@@ -264,9 +264,39 @@ html, body {
   position: relative; z-index: 20;
   pointer-events: all;
   cursor: text;
+  z-index: 2;
+}
+.ghost-text{
+  position:absolute;
+  left:0;
+  top:0;
+  pointer-events:none;
+  font-family:'Cormorant Garamond', serif;
+  font-size:40px;
+  font-weight:600;
+  color:rgba(237,232,223,0.22);
+  line-height:1.15;
+  padding:4px 0 14px;
+  white-space:nowrap;
+  overflow:hidden;
+  z-index: 1;
+}
+
+.ghost-caret{
+  display:inline-block;
+  width:2px;
+  height:1.1em;
+  background:var(--accent);
+  margin-left:3px;
+  animation:caretBlink 1s infinite;
+}
+
+@keyframes caretBlink{
+  0%,50%,100%{opacity:1}
+  25%,75%{opacity:0}
 }
 #craving-input::placeholder {
-  color: rgba(237,232,223,0.13);
+  color: rgba(237, 232, 223, 0.404);
   font-style: italic; font-weight: 300;
 }
 
@@ -546,15 +576,15 @@ html, body {
     <div class="m-tag">temptation check</div>
     <div class="m-pre">I'm tempted to</div>
     <div class="m-input-wrap">
-      <input
-        type="text"
-        id="craving-input"
-        placeholder="scroll Instagram…"
-        autocomplete="off"
-        spellcheck="false"
-        enterkeyhint="go"
-      >
-    </div>
+  <div class="ghost-text" id="ghost-text"></div>
+  <input
+    type="text"
+    id="craving-input"
+    autocomplete="off"
+    spellcheck="false"
+    enterkeyhint="go"
+  >
+</div>
     <div class="m-post">Or should I stay on track?</div>
     <div class="m-cta">
       <button id="go-btn">
@@ -786,6 +816,66 @@ html, body {
       showAndroidBanner();
     }
   }
+ const ghost = document.getElementById("ghost-text");
+const input = document.getElementById("craving-input");
+
+const DISTRACTIONS = [
+"scroll Instagram…",
+"watch one more reel…",
+"order junk food…",
+"skip the gym…",
+"hit snooze again…",
+"check Twitter again…",
+"buy something useless…",
+"procrastinate today…",
+"quit halfway…",
+"take the easy way out…"
+];
+
+let index = 0;
+let char = 0;
+let typing = true;
+
+function legendaryTyping(){
+
+  input.addEventListener("input", () => {
+  if(input.value.length > 0){
+    ghost.style.opacity = "0";
+  } else {
+    ghost.style.opacity = "1";
+  }
+});
+  const text = DISTRACTIONS[index];
+
+  if(typing){
+
+    char++;
+    ghost.innerHTML =
+      text.slice(0,char) + '<span class="ghost-caret"></span>';
+
+    if(char === text.length){
+      typing = false;
+      setTimeout(legendaryTyping,1600);
+      return;
+    }
+
+  }else{
+
+    char--;
+    ghost.innerHTML =
+      text.slice(0,char) + '<span class="ghost-caret"></span>';
+
+    if(char === 0){
+      typing = true;
+      index = (index+1) % DISTRACTIONS.length;
+    }
+
+  }
+
+  setTimeout(legendaryTyping, typing ? 60 : 35);
+}
+
+legendaryTyping();
 
   // ── EVENTS ───────────────────────────────────────────
   document.getElementById('go-btn').addEventListener('click', launch);

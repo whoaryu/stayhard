@@ -1,4 +1,6 @@
-const CACHE = 'stayhard-v1';
+// ⚠️ BUMP THIS VERSION STRING every time you deploy new changes
+// e.g. stayhard-v2, stayhard-v3 — old phone will then fetch fresh
+const CACHE = 'stayhard-v2';
 
 // Cache the HTML, all images, and the logo on install
 self.addEventListener('install', (e) => {
