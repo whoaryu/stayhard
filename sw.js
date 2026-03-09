@@ -1,14 +1,14 @@
 // ⚠️ BUMP THIS VERSION STRING every time you deploy new changes
 // e.g. stayhard-v2, stayhard-v3 — old phone will then fetch fresh
-const CACHE = 'stayhard-v2';
+const CACHE = 'stayhard-v2.1.1';
 
 // Cache the HTML, all images, and the logo on install
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE).then((cache) => {
       const assets = ['./index.html', './logo.jpg'];
-      // Cache all 13 motivation images
-      for (let i = 1; i <= 13; i++) assets.push(`./${i}.jpg`);
+      // Cache all 22 motivation images
+      for (let i = 1; i <= 22; i++) assets.push(`./${i}.jpg`);
       return cache.addAll(assets).catch(() => {
         // If some images don't exist yet, cache what we can
         return Promise.allSettled(assets.map(a => cache.add(a).catch(() => {})));
