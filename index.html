@@ -468,17 +468,19 @@ html, body {
 }
 .craving-tag.show { opacity: 1; transform: translateY(0); }
 .ct-eyebrow {
-  font-size: 9px; letter-spacing: 4px; font-weight: 600;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
+  font-size: 11px; letter-spacing: 4px; font-weight: 600;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
 }
 .ct-craving {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.3;
+  font-size: 32px; font-weight: 600; color: var(--text); line-height: 1.25;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
 }
 .ct-verdict {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 13px; font-style: italic; font-weight: 300;
-  color: rgba(230,80,70,0.9); margin-top: 4px;
+  font-size: 17px; font-style: italic; font-weight: 400;
+  color: rgba(230,80,70,0.95); margin-top: 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
 
 /* bottom: dots + hint */
@@ -516,6 +518,22 @@ html, body {
   transition: background 0.2s;
 }
 .x-btn:active { background: rgba(191,155,90,0.35); }
+
+/* mute button */
+.mute-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top,0px) + 38px);
+  right: 60px; z-index: 100;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(237,232,223,0.18);
+  color: var(--text); font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: background 0.2s;
+}
+.mute-btn:active { background: rgba(191,155,90,0.35); }
 
 /* ══════════════════════════════════
    KEYFRAMES
@@ -641,7 +659,23 @@ html, body {
   </div>
 
   <button class="x-btn" id="close-btn">✕</button>
+  <button class="mute-btn" id="mute-btn">
+    <svg class="icon-unmuted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    </svg>
+    <svg class="icon-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </button>
 </div>
+
+<!-- Background Music -->
+<audio id="bg-music" loop>
+  <source src="song.mp3" type="audio/mpeg">
+</audio>
 
 <script>
   const TOTAL_IMGS  = 22;
@@ -763,6 +797,9 @@ html, body {
     resetBars();
     goToSlide(0);
     startTimer();
+    
+    // Start music when entering image screen
+    bgMusic.play().catch(() => {});
   }
 
   function goBack() {
@@ -780,6 +817,10 @@ html, body {
 
     document.getElementById('craving-tag').classList.remove('show');
     current = 0;
+    
+    // Stop music when going back
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
   }
 
   function goToSlide(n) {
@@ -924,6 +965,29 @@ legendaryTyping();
       startTimer();
     }
   }, { passive: true });
+
+  // ── BACKGROUND MUSIC ────────────────────────────────
+  const bgMusic = document.getElementById('bg-music');
+  const muteBtn = document.getElementById('mute-btn');
+  let isMuted = false;
+  bgMusic.pause();
+bgMusic.currentTime = 0;
+
+  // Mute button
+  muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isMuted = !isMuted;
+    bgMusic.muted = isMuted;
+    const iconUnmuted = muteBtn.querySelector('.icon-unmuted');
+    const iconMuted = muteBtn.querySelector('.icon-muted');
+    if (isMuted) {
+      iconUnmuted.style.display = 'none';
+      iconMuted.style.display = 'block';
+    } else {
+      iconUnmuted.style.display = 'block';
+      iconMuted.style.display = 'none';
+    }
+  });
 </script>
 </div><!-- /app-shell -->
 </body>
